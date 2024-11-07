@@ -7,7 +7,9 @@ const Navbar = () => {
       <div className="max-w-5xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/">
-            <span className="text-2xl text-gray-900 font-semibold">M-Auth</span>
+            <span className="text-2xl text-[#7E60BF] font-semibold">
+              M-Auth
+            </span>
           </Link>
 
           <div className="flex items-center space-x-4 text-gray-900">
