@@ -4,6 +4,7 @@ import colors from "colors";
 import mongoose from "mongoose";
 import userRoutes from "./routes/userRoute.js";
 import authRoutes from "./routes/authRoute.js";
+import cors from "cors";
 dotenv.config();
 
 //! Initialize Express App and PORT
@@ -12,6 +13,11 @@ const PORT = process.env.PORT || 4500;
 
 //! Express Middlewares
 app.use(express.json()); // To parse the JSON data from Req.body
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow only this origin
+  })
+);
 
 //! Connection to the MONGO DB
 mongoose
@@ -33,12 +39,28 @@ app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 
 //! Custom Middleware
+// app.use((err, req, res, next) => {
+//   const statusCode = err.statusCode || 500;
+//   const message = err.message || "Internal Server Error";
+//   return res.status(statusCode).json({
+//     success: false,
+//     error: message,
+//     statusCode,
+//   });
+// });
+
+// Custom error-handling middleware
 app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  return res.status(statusCode).json({
-    success: false,
-    error: message,
-    statusCode,
-  });
+  // Only send a response if headers haven't been sent already
+  if (!res.headersSent) {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(statusCode).json({
+      success: false,
+      error: message,
+      statusCode,
+    });
+  } else {
+    next(err); // Pass along if headers have already been sent
+  }
 });
