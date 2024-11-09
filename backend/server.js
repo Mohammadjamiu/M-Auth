@@ -13,20 +13,28 @@ const PORT = process.env.PORT || 4500;
 
 //! Express Middlewares
 app.use(express.json()); // To parse the JSON data from Req.body
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173", // Allow only this origin
+//   })
+// );
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow only this origin
+    origin: "http://localhost:5173", // Your frontend origin
+    credentials: true, // Allow cookies to be sent
   })
 );
 
 //! Connection to the MONGO DB
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    connectTimeoutMS: 20000, // Increase timeout to 20 seconds
+  })
   .then(() => {
-    console.log("Connected to DB successfully ✔️".cyan.underline);
+    console.log("✔️  Connected to DB successfully".cyan.underline);
   })
   .catch((err) => {
-    console.log(`Error connecting to DB ❌: ${err}`.red.underline);
+    console.log(`❌  Error connecting to DB: ${err}`.red.underline);
   });
 
 //! Listening on the PORT
