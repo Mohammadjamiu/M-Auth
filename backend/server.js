@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import userRoutes from "./routes/userRoute.js";
 import authRoutes from "./routes/authRoute.js";
 import cors from "cors";
+import { errorHandler } from "./utils/errorHandler.js";
 dotenv.config();
 
 //! Initialize Express App and PORT
@@ -59,7 +60,6 @@ app.use("/api/auth", authRoutes);
 
 // Custom error-handling middleware
 app.use((err, req, res, next) => {
-  // Only send a response if headers haven't been sent already
   if (!res.headersSent) {
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -69,6 +69,6 @@ app.use((err, req, res, next) => {
       statusCode,
     });
   } else {
-    next(err); // Pass along if headers have already been sent
+    next(err);
   }
 });

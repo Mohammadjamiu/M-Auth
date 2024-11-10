@@ -26,6 +26,34 @@ export const signup = async (req, res, next) => {
     }
   }
 };
+// export const signin = async (req, res, next) => {
+//   const { email, password } = req.body;
+
+//   if (!email || !password) {
+//     return res.status(400).json({ message: "All fields are required" });
+//   }
+
+//   try {
+//     const validUser = await UserModel.findOne({ email });
+//     if (!validUser) return next(errorHandler(404, "User not found!"));
+//     const validPassword = bcryptjs.compareSync(password, validUser.password);
+//     if (!validPassword) return next(errorHandler(401, "Invalid credential"));
+//     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
+//     const { password: hashedPassword, ...rest } = validUser._doc;
+//     res
+//       .cookie("access_token", token, {
+//         httpOnly: true,
+//         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day
+//         sameSite: "None", // Necessary for cross-origin in development
+//         secure: process.env.NODE_ENV === "production" ? true : false,
+//       })
+//       .status(200)
+//       .json(rest);
+//   } catch (error) {
+//     console.error("Signin error:", error);
+//     next(error);
+//   }
+// };
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -35,17 +63,25 @@ export const signin = async (req, res, next) => {
 
   try {
     const validUser = await UserModel.findOne({ email });
-    if (!validUser) return next(errorHandler(404, "User not found!"));
+    if (!validUser) {
+      // Use the custom error handler
+      return next(errorHandler(404, "User not found!"));
+    }
+
     const validPassword = bcryptjs.compareSync(password, validUser.password);
-    if (!validPassword) return next(errorHandler(401, "Invalid credential"));
+    if (!validPassword) {
+      return next(errorHandler(401, "Invalid credentials"));
+    }
+
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
     const { password: hashedPassword, ...rest } = validUser._doc;
+
     res
       .cookie("access_token", token, {
         httpOnly: true,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day
-        sameSite: "None", // Necessary for cross-origin in development
-        secure: process.env.NODE_ENV === "production" ? true : false,
+        sameSite: "None",
+        secure: process.env.NODE_ENV === "production",
       })
       .status(200)
       .json(rest);

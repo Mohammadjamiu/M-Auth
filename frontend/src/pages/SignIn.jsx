@@ -1,22 +1,75 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  signInFailure,
+  signInStart,
+  signInSuccess,
+} from "../redux/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const { loading, error } = useSelector((state) => {
+    return state.user;
+  });
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   // setLoading(true);
+  //   // setError(false);
+  //   dispatch(signInStart());
+
+  //   console.log("Form Data:", formData); // Check form data before sending it
+
+  //   try {
+  //     const response = await fetch("http://localhost:4501/api/auth/signin", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(formData),
+  //       credentials: "include",
+  //     });
+
+  //     // if (!response.ok) {
+  //     //   throw new Error(`Request failed with status ${response.status}`);
+  //     // }
+  //     if (!response.ok) {
+  //       const data = await response.json();
+  //       const errorMessage = data?.error || "An unknown error occurred";
+  //       dispatch(signInFailure({ message: errorMessage }));
+  //       return;
+  //     }
+
+  //     const data = await response.json();
+  //     console.log(data);
+
+  //     // setLoading(false);
+  //     if (data.success === false) {
+  //       // setError(true);
+  //       dispatch(signInFailure(data.message));
+  //       return;
+  //     }
+  //     dispatch(signInSuccess(data));
+  //     navigate("/");
+  //   } catch (error) {
+  //     console.error("An error occurred:", error);
+  //     // setLoading(false);
+  //     // setError(true);
+  //     dispatch(signInFailure(error));
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(false);
-
-    console.log("Form Data:", formData); // Check form data before sending it
+    dispatch(signInStart());
 
     try {
       const response = await fetch("http://localhost:4501/api/auth/signin", {
@@ -28,33 +81,40 @@ const SignIn = () => {
         credentials: "include",
       });
 
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
-
       const data = await response.json();
-      console.log(data);
 
-      setLoading(false);
-      if (data.success === false) {
-        setError(true);
+      if (!response.ok) {
+        // Dispatch specific error message from server if it exists
+        const errorMessage = data?.error || "An unknown error occurred";
+        dispatch(signInFailure({ message: errorMessage }));
         return;
       }
+
+      dispatch(signInSuccess(data));
       navigate("/");
     } catch (error) {
-      console.error("An error occurred:", error.message);
-      setLoading(false);
-      setError(true);
+      console.error("An error occurred:", error);
+      // Fallback if no server error message exists
+      dispatch(
+        signInFailure({ message: error.message || "An unknown error occurred" })
+      );
     }
   };
+
   return (
     <div className="mx-auto px-[20px] max-w-[35rem] w-full">
       <h2 className="text-2xl font-bold font-sans-display my-7">Sign In</h2>
-      {error && (
-        <p className="mb-6 bg-red-200 p-4 rounded-md text-sm text-red-700">
-          Something went wrong!
-        </p>
-      )}
+      {error
+        ? (
+            <p className="mb-6 bg-red-200 p-4 rounded-md text-sm text-red-700">
+              {error.message}
+            </p>
+          ) || (
+            <p className="mb-6 bg-red-200 p-4 rounded-md text-sm text-red-700">
+              Something went wrong!
+            </p>
+          )
+        : ""}
 
       <form className="flex flex-col gap-y-4" onSubmit={handleSubmit}>
         <label
