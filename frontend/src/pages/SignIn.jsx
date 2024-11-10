@@ -6,6 +6,7 @@ import {
   signInSuccess,
 } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
+import OAuth from "../components/OAuth";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
@@ -153,6 +154,7 @@ const SignIn = () => {
             {loading ? "Loading..." : "Sign In"}
           </button>
         </div>
+        <OAuth />
       </form>
       <p className="text-[15px] mt-5 pl-1">
         Don&apos;t have an account?
